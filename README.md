@@ -2,7 +2,7 @@
 
 **Current Deployment URL**: (Coming soon...)
 
-Voyager is a route optimization platform built to help users plan efficient store visits based on their current location, real-time traffic, and store opening hours. Voyager ensures maximize store coverage with minimal travel time.
+Voyager is a route optimization platform built to help users plan efficient store visits based on their current location, real-time traffic, and store opening hours. Voyager ensures maximum store coverage and minimal travel time.
 
 ---
 
@@ -131,8 +131,15 @@ These endpoints will handle store location retrieval and optimal path calculatio
 
 ## Authors
 
-- Brian Chang – [@brimatt16219](https://github.com/brimatt16219)
-- Adam Lim
+### Brian Chang
+- GitHub: [@brimatt16219](https://github.com/brimatt16219)
+- LinkedIn: [linkedin.com/in/ch4ng](https://www.linkedin.com/in/ch4ng/)
+- Email: brimatt062495@gmail.com
+
+### Adam Lim
+- GitHub: [@alim04](https://github.com/alim04)
+- LinkedIn: [linkedin.com/in/adamdlim](https://www.linkedin.com/in/adamdlim/)
+- Email: alim4@ufl.edu
 
 ---
 
@@ -144,4 +151,4 @@ This project is licensed under the MIT License.
 
 ## Deployment (Planned)
 
-Frontend deployment will use **Vercel**, and backend hosting options may include **Render**, **Railway**, or **DigitalOcean**. Deployment instructions and CI/CD notes will be added after MVP completion.
+Frontend deployment will use Vercel, and backend hosting options may include Render, Railway, or DigitalOcean. Deployment instructions and CI/CD notes will be added after MVP completion.
