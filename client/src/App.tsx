@@ -15,7 +15,7 @@ interface Store {
 function App() {
   const [stores, setStores] = useState<Store[]>([]);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number }>();
-  const [storeInput, setStoreInput] = useState("target,walmart,bestbuy");
+  const [storeInput, setStoreInput] = useState("");
   const [radiusMiles, setRadiusMiles] = useState<number>(1);
 
   // Phase 4 state
