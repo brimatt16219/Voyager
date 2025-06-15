@@ -1,7 +1,7 @@
 // App.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Map from "./components/Map";
+import Map from "../components/Map";
 
 interface Store {
   name: string;
@@ -53,30 +53,47 @@ function App() {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} style={{ padding: "1rem" }}>
-        <label>
-          Stores (comma­-sep):
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
+      <h1 className="text-6xl font-semibold mb-6">Voyager</h1>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white rounded-lg shadow-md p-6 mb-6"
+      >
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-2">
+            Locations
+          </label>
           <input
             type="text"
             value={storeInput}
             onChange={(e) => setStoreInput(e.target.value)}
-            style={{ margin: "0 1rem" }}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
           />
-        </label>
-        <label>
-          Radius (miles):
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-2">
+            Radius (miles)
+          </label>
           <input
             type="number"
             value={radiusMiles}
             onChange={(e) => setRadiusMiles(Number(e.target.value))}
-            style={{ width: "4rem", margin: "0 1rem" }}
+            className="w-32 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
           />
-        </label>
-        <button type="submit">Search</button>
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-black hover:bg-gray-700 text-white font-medium py-2 rounded focus:outline-none focus:ring-2 focus:ring-grey-700"
+        >
+          Search
+        </button>
       </form>
 
-      {userPos && <Map stores={stores} />}
+      {userPos && (
+        <div className="w-full max-w-4xl flex-1">
+          <Map stores={stores} />
+        </div>
+      )}
     </div>
   );
 }
