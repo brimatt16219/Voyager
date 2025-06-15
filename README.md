@@ -2,7 +2,7 @@
 
 **Current Deployment URL**: (Coming soon...)
 
-Voyager is a route optimization platform built to help users plan efficient store visits based on their current location, real-time traffic, and store opening hours. Ideal for scenarios like purchasing limited-edition Pokémon bundles early in the morning, Voyager ensures you maximize store coverage and minimize travel time.
+Voyager is a route optimization platform built to help users plan efficient store visits based on their current location, real-time traffic, and store opening hours. Voyager ensures maximize store coverage with minimal travel time.
 
 ---
 
