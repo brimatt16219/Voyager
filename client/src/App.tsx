@@ -70,7 +70,7 @@ function App() {
     <div>
       <form onSubmit={handleSubmit} style={{ padding: "1rem" }}>
         <label>
-          Stores (comma-sep):
+          Stores (separate with commas):
           <input
             type="text"
             value={storeInput}
