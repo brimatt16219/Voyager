@@ -35,7 +35,9 @@ cd Voyager
 
 ### 2. Frontend Development
 
-Navigate to the frontend directory, install dependencies, and start the React development server:
+Voyager uses Vite and React frontend development.
+
+Navigate to the frontend directory, install dependencies, and start the Vite development server:
 
 ```bash
 cd client
@@ -45,16 +47,16 @@ npm install
 Create a `.env` file in the `client/` directory and add your API key:
 
 ```env
-REACT_APP_GOOGLE_MAPS_API_KEY=your_api_key_here
+VITE_GOOGLE_MAPS_API_KEY=your_api_key_here
 ```
 
-Start the server:
+Start the development server:
 
 ```bash
-npm start
+npm run dev
 ```
 
-This will run the frontend at: http://localhost:3000
+This will run the frontend at: http://localhost:5173
 
 ---
 
@@ -100,6 +102,7 @@ Voyager/
 ### Frontend
 
 - React (TypeScript)
+- Vite
 - @react-google-maps/api
 - Axios
 - React Router DOM (optional)
