@@ -1,3 +1,4 @@
+// App.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Map from "./components/Map";
@@ -10,66 +11,68 @@ interface Store {
   address: string;
 }
 
+
 function App() {
   const [stores, setStores] = useState<Store[]>([]);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number }>();
-  const [storeInput, setStoreInput] = useState<string>("");
+  const [storeInput, setStoreInput] = useState("target,walmart,bestbuy");
+  const [radiusMiles, setRadiusMiles] = useState<number>(1);
 
-  const fetchStores = (chains: string[]) => {
+  const fetchStores = (chains: string[], miles: number) => {
     if (!userPos) return;
-  
+    // convert miles → meters
+    const radiusMeters = Math.round(miles * 1609.34);
+
     axios
       .get("/api/stores", {
         params: {
           lat: userPos.lat,
           lng: userPos.lng,
-          chains: chains.join(",")
-        }
+          chains: chains.join(","),      // comma-separated
+          radius: radiusMeters,          // in meters
+        },
       })
-      .then((res) => {
-        console.log("Stores fetched:", res.data);
-        if (Array.isArray(res.data)) {
-          setStores(res.data);
-        } else {
-          console.error("Expected array but got:", typeof res.data, res.data);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to fetch stores:", err);
-      });
+      .then((res) => setStores(res.data))
+      .catch((err) => console.error("Failed to fetch stores:", err));
   };
-  
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition((pos) => {
-      const coords = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
-      };
+      const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       setUserPos(coords);
+      // auto-fetch on load
+      const chains = storeInput.split(",").map(s => s.trim());
+      fetchStores(chains, radiusMiles);
     });
-  }, []);
+  }, [radiusMiles]); // refetch if radius changes
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const chains = storeInput
-      .split(",")
-      .map((s) => s.trim().toLowerCase())
-      .filter((s) => s !== "");
-    fetchStores(chains);
+    const chains = storeInput.split(",").map(s => s.trim());
+    fetchStores(chains, radiusMiles);
   };
 
   return (
     <div>
       <form onSubmit={handleSubmit} style={{ padding: "1rem" }}>
-        <label htmlFor="stores">Enter store names (comma-separated): </label>
-        <input
-          type="text"
-          id="stores"
-          value={storeInput}
-          onChange={(e) => setStoreInput(e.target.value)}
-          style={{ marginRight: "0.5rem", padding: "0.25rem" }}
-        />
+        <label>
+          Stores (comma­-sep):
+          <input
+            type="text"
+            value={storeInput}
+            onChange={(e) => setStoreInput(e.target.value)}
+            style={{ margin: "0 1rem" }}
+          />
+        </label>
+        <label>
+          Radius (miles):
+          <input
+            type="number"
+            value={radiusMiles}
+            onChange={(e) => setRadiusMiles(Number(e.target.value))}
+            style={{ width: "4rem", margin: "0 1rem" }}
+          />
+        </label>
         <button type="submit">Search</button>
       </form>
 
