@@ -137,7 +137,7 @@ These endpoints will handle store location retrieval and optimal path calculatio
 - Email: brimatt062495@gmail.com
 
 ### Adam Lim
-- GitHub: [@alim04](https://github.com/alim04)
+- GitHub: [@alim08](https://github.com/alim08)
 - LinkedIn: [linkedin.com/in/adamdlim](https://www.linkedin.com/in/adamdlim/)
 - Email: alim4@ufl.edu
 
