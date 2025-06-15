@@ -13,7 +13,7 @@ interface Store {
 function App() {
   const [stores, setStores] = useState<Store[]>([]);
   const [userPos, setUserPos] = useState<{ lat: number; lng: number }>();
-  const [storeInput, setStoreInput] = useState<string>("target,walmart,bestbuy");
+  const [storeInput, setStoreInput] = useState<string>("");
 
   const fetchStores = (chains: string[]) => {
     if (!userPos) return;
