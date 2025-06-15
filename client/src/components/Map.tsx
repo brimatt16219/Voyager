@@ -1,5 +1,5 @@
-import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
-import { useState, useEffect } from "react";
+import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
+import { useState, useEffect } from 'react';
 
 interface Store {
   name: string;
@@ -12,53 +12,48 @@ interface Store {
 const Map = ({ stores }: { stores: Store[] }) => {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places"]
+    libraries: ['places'],
   });
 
   const [userPos, setUserPos] = useState<google.maps.LatLngLiteral>();
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const location = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude
-        };
-        console.log("User location obtained:", location);
-        setUserPos(location);
-      },
-      (error) => {
-        console.error("Error getting user location:", error);
-      }
+      (pos) => setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      (err) => console.error(err)
     );
   }, []);
 
-  useEffect(() => {
-    console.log("Map loaded status:", isLoaded);
-    console.log("Stores received as props:", stores);
-  }, [isLoaded, stores]);
+  // Match the form's max width (max-w-md) and height
+  const containerClasses = "w-full max-w-md h-96 bg-white rounded-lg shadow-md overflow-hidden mx-auto";
+  const mapClasses = "w-full h-full rounded-lg";
 
-  if (!isLoaded || !userPos) return <div>Loading Map...</div>;
+  if (!isLoaded || !userPos) {
+    return (
+      <div className={`${containerClasses} flex items-center justify-center`}>
+        <p className="text-gray-500">Loading Map...</p>
+      </div>
+    );
+  }
 
   return (
-    <GoogleMap
-      center={userPos}
-      zoom={12}
-      mapContainerStyle={{ width: "100%", height: "80vh" }}
-      onLoad={() => console.log("Google Map fully rendered.")}
-    >
-      <Marker position={userPos} />
-      {stores.map((store, i) => {
-        console.log(`Rendering marker for store ${store.name} at`, store.lat, store.lng);
-        return (
+    <div className={containerClasses}>
+      <GoogleMap
+        center={userPos}
+        zoom={12}
+        mapContainerClassName={mapClasses}
+        options={{ fullscreenControl: false }}
+      >
+        <Marker position={userPos} />
+        {stores.map((store) => (
           <Marker
-            key={store.place_id || i}
+            key={store.place_id}
             position={{ lat: store.lat, lng: store.lng }}
             title={store.name}
           />
-        );
-      })}
-    </GoogleMap>
+        ))}
+      </GoogleMap>
+    </div>
   );
 };
 

@@ -1,8 +1,9 @@
-// App.tsx
+// src/App.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
-import RouteMap from "./components/RouteMap";
-import type { RouteStop } from "./components/RouteMap";
+import Map from "../components/Map";
+import RouteMap from "../components/RouteMap";
+import type { RouteStop } from "../components/RouteMap";
 
 interface Store {
   name: string;
@@ -57,46 +58,63 @@ function App() {
       const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       setUserPos(coords);
       // initial fetch/optimize
-      fetchAndOptimize(storeInput.split(",").map(s => s.trim()), radiusMiles);
+      fetchAndOptimize(storeInput.split(",").map((s) => s.trim()), radiusMiles);
     });
   }, [radiusMiles]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchAndOptimize(storeInput.split(",").map(s => s.trim()), radiusMiles);
+    fetchAndOptimize(storeInput.split(",").map((s) => s.trim()), radiusMiles);
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit} style={{ padding: "1rem" }}>
-        <label>
-          Stores (separate with commas):
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-4">
+      <h1 className="text-6xl font-semibold mb-6">Voyager</h1>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white rounded-lg shadow-md p-6 mb-6"
+      >
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-2">
+            Locations (comma-separated)
+          </label>
           <input
             type="text"
             value={storeInput}
             onChange={(e) => setStoreInput(e.target.value)}
-            style={{ margin: "0 1rem" }}
+            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
           />
-        </label>
-        <label>
-          Radius (miles):
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 font-medium mb-2">
+            Radius (miles)
+          </label>
           <input
             type="number"
             value={radiusMiles}
             onChange={(e) => setRadiusMiles(Number(e.target.value))}
-            style={{ width: "4rem", margin: "0 1rem" }}
+            className="w-32 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
           />
-        </label>
-        <button type="submit">Search</button>
+        </div>
+        <button
+          type="submit"
+          className="w-full bg-black hover:bg-gray-700 text-white font-medium py-2 rounded focus:outline-none focus:ring-2 focus:ring-gray-700"
+        >
+          Search
+        </button>
       </form>
 
-      {userPos && directions ? (
-        <RouteMap directions={directions} routeOrder={routeOrder} userPos={userPos} />
-      ) : (
-        <div style={{ padding: "1rem" }}>
-          {stores.length
-            ? "Optimizing route..."
-            : "No stores to display (or still loading)."}
+      {userPos && (
+        <div className="w-full max-w-4xl flex-1">
+          {!directions ? (
+            <Map stores={stores} />
+          ) : (
+            <RouteMap
+              directions={directions}
+              routeOrder={routeOrder}
+              userPos={userPos}
+            />
+          )}
         </div>
       )}
     </div>
