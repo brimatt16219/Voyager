@@ -1,8 +1,6 @@
-// src/App.tsx
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Map from "../components/Map";
-import RouteMap from "../components/RouteMap";
 import type { RouteStop } from "../components/RouteMap";
 
 interface Store {
@@ -18,53 +16,83 @@ function App() {
   const [userPos, setUserPos] = useState<{ lat: number; lng: number }>();
   const [storeInput, setStoreInput] = useState("");
   const [radiusMiles, setRadiusMiles] = useState<number>(1);
-
-  // Phase 4 state
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [routeOrder, setRouteOrder] = useState<RouteStop[]>([]);
 
   const fetchAndOptimize = async (chains: string[], miles: number) => {
     if (!userPos) return;
-    const radiusMeters = Math.round(miles * 1609.34);
+    // Convert miles to meters and enforce a minimum
+    const radiusMeters = Math.max(Math.round(miles * 1609.34), 1000);
 
     try {
       // 1) fetch stores
       const { data: storeData } = await axios.get<Store[]>("/api/stores", {
-        params: { lat: userPos.lat, lng: userPos.lng, chains: chains.join(","), radius: radiusMeters },
+        params: {
+          lat: userPos.lat,
+          lng: userPos.lng,
+          chains: chains.join(","),
+          radius: radiusMeters,
+        },
       });
       setStores(storeData);
 
       if (!storeData.length) {
-        setDirections(null);
         setRouteOrder([]);
         return;
       }
 
-      // 2) optimize
+      // 2) optimize stop order
       const { data: opt } = await axios.post("/api/optimize-route", {
         start: userPos,
         stores: storeData,
       });
       setRouteOrder(opt.order);
-      setDirections(opt.directions);
     } catch (err) {
-      console.error("Error fetching or optimizing:", err);
+      if (axios.isAxiosError(err)) {
+        console.error(
+          "API error:",
+          err.response?.status,
+          err.response?.data ?? err.message
+        );
+      } else {
+        console.error("Unexpected error:", err);
+      }
     }
   };
 
-  // on load & when radius changes
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      setUserPos(coords);
-      // initial fetch/optimize
-      fetchAndOptimize(storeInput.split(",").map((s) => s.trim()), radiusMiles);
-    });
-  }, [radiusMiles]);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserPos({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      (err) => {
+        console.warn("Geolocation failed:", err.code, err.message);
+        setUserPos({ lat: 28.5383, lng: -81.3792});
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchAndOptimize(storeInput.split(",").map((s) => s.trim()), radiusMiles);
+    const chains = storeInput
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    if (!userPos) {
+      alert("Waiting on location…");
+      return;
+    }
+    if (chains.length === 0) {
+      alert("Enter at least one store chain.");
+      return;
+    }
+    if (radiusMiles <= 0) {
+      alert("Radius must be greater than zero.");
+      return;
+    }
+
+    fetchAndOptimize(chains, radiusMiles);
   };
 
   return (
@@ -106,15 +134,7 @@ function App() {
 
       {userPos && (
         <div className="w-full max-w-4xl flex-1">
-          {!directions ? (
-            <Map stores={stores} />
-          ) : (
-            <RouteMap
-              directions={directions}
-              routeOrder={routeOrder}
-              userPos={userPos}
-            />
-          )}
+          <Map stores={stores} userPos={userPos} routeOrder={routeOrder} />
         </div>
       )}
     </div>
