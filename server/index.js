@@ -111,49 +111,71 @@ app.post('/api/optimize-route', async (req, res) => {
   }
 
   try {
-    let currentTime = Date.now();
-    let currentLoc = { lat: start.lat, lng: start.lng };
+    const startTime = Date.now();
+    const allLocations = [start, ...stores];
+    
+    // Step 1: Get all pairwise distances in one API call
+    console.log('[/api/optimize-route] fetching distance matrix for', allLocations.length, 'locations');
+    
+    const origins = allLocations.map(loc => `${loc.lat},${loc.lng}`).join('|');
+    const destinations = origins; // Same locations for origins and destinations
+    
+    const distanceMatrixResponse = await axios.get(
+      'https://maps.googleapis.com/maps/api/distancematrix/json',
+      {
+        params: {
+          origins,
+          destinations,
+          departure_time: Math.floor(startTime / 1000),
+          key: process.env.GOOGLE_MAPS_API_KEY,
+        },
+      }
+    );
+
+    // Step 2: Build distance matrix
+    const distanceMatrix = [];
+    const durationMatrix = [];
+    
+    for (let i = 0; i < allLocations.length; i++) {
+      distanceMatrix[i] = [];
+      durationMatrix[i] = [];
+      for (let j = 0; j < allLocations.length; j++) {
+        const element = distanceMatrixResponse.data.rows[i].elements[j];
+        if (element.status === 'OK') {
+          distanceMatrix[i][j] = element.distance.value; // meters
+          durationMatrix[i][j] = element.duration.value; // seconds
+        } else {
+          distanceMatrix[i][j] = Infinity;
+          durationMatrix[i][j] = Infinity;
+        }
+      }
+    }
+
+    // Step 3: Optimize route using 2-opt algorithm (improved nearest neighbor)
+    const optimizedRoute = optimizeRouteWith2Opt(durationMatrix, stores.length);
+    
+    // Step 4: Build sequence with timing
     const sequence = [];
-    const unvisited = [...stores];
-
-    while (unvisited.length) {
-      // get all travel times
-      const etas = await Promise.all(
-        unvisited.map(s =>
-          axios.get(
-            'https://maps.googleapis.com/maps/api/distancematrix/json',
-            {
-              params: {
-                origins: `${currentLoc.lat},${currentLoc.lng}`,
-                destinations: `${s.lat},${s.lng}`,
-                departure_time: Math.floor(currentTime / 1000),
-                key: process.env.GOOGLE_MAPS_API_KEY,
-              },
-            }
-          ).then(r => ({
-            store: s,
-            travelMs: r.data.rows[0].elements[0].duration.value * 1000,
-          }))
-        )
-      );
-
-      // pick shortest travel
-      etas.sort((a, b) => a.travelMs - b.travelMs);
-      const { store, travelMs } = etas[0];
+    let currentTime = startTime;
+    let currentIndex = 0; // Start location index
+    
+    for (let i = 1; i < optimizedRoute.length; i++) {
+      const storeIndex = optimizedRoute[i] - 1; // -1 because optimizedRoute[0] is start location
+      const store = stores[storeIndex];
+      const travelMs = durationMatrix[currentIndex][optimizedRoute[i]] * 1000;
       const arrival = currentTime + travelMs;
-
+      
       sequence.push({
         place_id: store.place_id,
         arrival_time: new Date(arrival).toISOString(),
         coords: { lat: store.lat, lng: store.lng },
       });
-
+      
       currentTime = arrival;
-      currentLoc = { lat: store.lat, lng: store.lng };
-      unvisited.splice(unvisited.findIndex(u => u.place_id === store.place_id), 1);
+      currentIndex = optimizedRoute[i];
     }
 
-    // build directions
+    // Step 5: Build directions with optimized waypoints
     const origin = `${start.lat},${start.lng}`;
     const destinationStop = sequence[sequence.length - 1];
     const destination = `${destinationStop.coords.lat},${destinationStop.coords.lng}`;
@@ -174,8 +196,18 @@ app.post('/api/optimize-route', async (req, res) => {
       }
     );
 
-    console.log('[/api/optimize-route] sending back', sequence.length, 'stops');
-    return res.json({ order: sequence, directions: dirResp.data });
+    const totalTime = Date.now() - startTime;
+    console.log(`[/api/optimize-route] optimized ${sequence.length} stops in ${totalTime}ms`);
+    
+    return res.json({ 
+      order: sequence, 
+      directions: dirResp.data,
+      optimization_stats: {
+        total_distance_meters: calculateTotalDistance(distanceMatrix, optimizedRoute),
+        total_duration_seconds: calculateTotalDuration(durationMatrix, optimizedRoute),
+        optimization_time_ms: totalTime
+      }
+    });
   } catch (err) {
     console.error('[/api/optimize-route] ERROR:', err);
     return res.status(500).json({
@@ -185,7 +217,91 @@ app.post('/api/optimize-route', async (req, res) => {
   }
 });
 
+// Helper function: 2-opt algorithm for route optimization
+function optimizeRouteWith2Opt(distanceMatrix, numStores) {
+  // Start with nearest neighbor solution
+  let route = nearestNeighbor(distanceMatrix, numStores);
+  let improved = true;
+  
+  while (improved) {
+    improved = false;
+    for (let i = 1; i < route.length - 2; i++) {
+      for (let j = i + 1; j < route.length; j++) {
+        if (j - i === 1) continue; // Skip adjacent edges
+        
+        const newRoute = [...route];
+        // Reverse the segment between i and j
+        for (let k = i; k <= j; k++) {
+          newRoute[k] = route[j - (k - i)];
+        }
+        
+        const oldDistance = calculateRouteDistance(distanceMatrix, route);
+        const newDistance = calculateRouteDistance(distanceMatrix, newRoute);
+        
+        if (newDistance < oldDistance) {
+          route = newRoute;
+          improved = true;
+        }
+      }
+    }
+  }
+  
+  return route;
+}
+
+// Helper function: Nearest neighbor algorithm
+function nearestNeighbor(distanceMatrix, numStores) {
+  const route = [0]; // Start at index 0 (start location)
+  const unvisited = new Set();
+  
+  for (let i = 1; i <= numStores; i++) {
+    unvisited.add(i);
+  }
+  
+  let current = 0;
+  while (unvisited.size > 0) {
+    let nearest = -1;
+    let minDistance = Infinity;
+    
+    for (const next of unvisited) {
+      if (distanceMatrix[current][next] < minDistance) {
+        minDistance = distanceMatrix[current][next];
+        nearest = next;
+      }
+    }
+    
+    route.push(nearest);
+    unvisited.delete(nearest);
+    current = nearest;
+  }
+  
+  return route;
+}
+
+// Helper function: Calculate total distance of a route
+function calculateRouteDistance(distanceMatrix, route) {
+  let total = 0;
+  for (let i = 0; i < route.length - 1; i++) {
+    total += distanceMatrix[route[i]][route[i + 1]];
+  }
+  return total;
+}
+
+// Helper function: Calculate total duration of a route
+function calculateTotalDuration(durationMatrix, route) {
+  let total = 0;
+  for (let i = 0; i < route.length - 1; i++) {
+    total += durationMatrix[route[i]][route[i + 1]];
+  }
+  return total;
+}
+
+// Helper function: Calculate total distance for response
+function calculateTotalDistance(distanceMatrix, route) {
+  return calculateRouteDistance(distanceMatrix, route);
+}
+
 // Start listening
 app.listen(PORT, () => {
-  console.log(`✅ Voyager backend listening on http://localhost:${PORT}`);
+  console.log(`✅ Voyager backend listening on https://localhost:${PORT}`);
 });

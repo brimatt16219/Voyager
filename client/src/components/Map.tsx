@@ -1,15 +1,23 @@
 // src/components/Map.tsx
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   GoogleMap,
   useLoadScript,
   DirectionsService,
   DirectionsRenderer,
 } from "@react-google-maps/api";
-import type { RouteStop } from "./RouteMap";
+import RouteFlowChart from "./FlowChart";
 
-// Load necessary libraries statically
+// load both the places & marker libs
 const LIBRARIES: ("places" | "marker")[] = ["places", "marker"];
+
+export interface RouteStop {
+  place_id: string;
+  arrival_time: string;
+  coords: { lat: number; lng: number };
+  name: string;
+  address: string;
+}
 
 interface Store {
   name: string;
@@ -26,122 +34,112 @@ interface MapProps {
 }
 
 export default function Map({ stores, userPos, routeOrder }: MapProps) {
-  const { isLoaded, loadError, loadError: error } = useLoadScript({
+  const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
   });
 
-  // State for the Directions result
-  const [directionsResult, setDirectionsResult] = useState<
-    google.maps.DirectionsResult | null
-  >(null);
+  // Map instance
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const onMapLoad = useCallback((m: google.maps.Map) => setMap(m), []);
 
-  // Reset directionsResult any time routeOrder changes, so new route will re-render
+  // Advanced markers for "you" + stores
+  const markerRefs = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   useEffect(() => {
-    setDirectionsResult(null);
-  }, [routeOrder]);
+    if (!map || !window.google?.maps?.marker) return;
+    markerRefs.current.forEach(m => (m.map = null));
+    markerRefs.current = [];
 
-  // Callback when DirectionsService returns
+    markerRefs.current.push(
+      new window.google.maps.marker.AdvancedMarkerElement({
+        map,
+        position: userPos,
+        title: "You are here",
+      })
+    );
+    stores.forEach(s => {
+      markerRefs.current.push(
+        new window.google.maps.marker.AdvancedMarkerElement({
+          map,
+          position: { lat: s.lat, lng: s.lng },
+          title: s.name,
+        })
+      );
+    });
+  }, [map, stores, userPos]);
+
+  // Directions state
+  const [directionsResult, setDirectionsResult] =
+    useState<google.maps.DirectionsResult | null>(null);
+
+  // reset when routeOrder changes
+  useEffect(() => setDirectionsResult(null), [routeOrder]);
+
   const directionsCallback = useCallback(
     (res: google.maps.DirectionsResult | null) => {
       if (res) setDirectionsResult(res);
-      else console.error("Directions callback returned no result");
+      else console.error("DirectionsService returned no result");
     },
     []
   );
 
-  // Imperative refs for advanced markers
-  const markerRefs = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
-
-  // Manage advanced markers whenever map, stores, or userPos change
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const onMapLoad = useCallback((m: google.maps.Map) => {
-    setMap(m);
-  }, []);
-
-  useEffect(() => {
-    if (!map) return;
-    // Clear existing markers
-    markerRefs.current.forEach((m) => (m.map = null));
-    markerRefs.current = [];
-
-    // Add user location marker
-    const userMarker = new google.maps.marker.AdvancedMarkerElement({
-      map,
-      position: userPos,
-      title: "You are here",
-    });
-    markerRefs.current.push(userMarker);
-
-    // Add store markers
-    stores.forEach((s) => {
-      const m = new google.maps.marker.AdvancedMarkerElement({
-        map,
-        position: { lat: s.lat, lng: s.lng },
-        title: s.name,
-      });
-      markerRefs.current.push(m);
-    });
-  }, [map, stores, userPos]);
-
   if (loadError) return <p>Error loading Google Maps</p>;
-  if (!isLoaded)
-    return (
-      <div className="w-full max-w-md h-96 bg-white rounded-lg shadow-md mx-auto">
-        <p className="flex items-center justify-center h-full text-gray-500">
-          Loading Map…
-        </p>
-      </div>
-    );
+  if (!isLoaded) return <p>Loading map…</p>;
 
-  // Determine if we should request directions
   const shouldRoute = routeOrder.length > 0;
-  const origin = userPos;
-  const destination = shouldRoute
-    ? routeOrder[routeOrder.length - 1].coords
-    : null;
-  const waypoints = shouldRoute
-    ? routeOrder.slice(0, -1).map((stop) => ({
-        location: stop.coords,
-        stopover: true,
-      }))
+  const origin      = userPos;
+  const destination = shouldRoute ? routeOrder[routeOrder.length - 1].coords : undefined;
+  const waypoints   = shouldRoute
+    ? routeOrder.slice(0, -1).map(stop => ({ location: stop.coords, stopover: true }))
     : [];
 
   return (
-    <div className="w-full max-w-md h-96 bg-white rounded-lg shadow-md mx-auto">
-      <GoogleMap
-        onLoad={onMapLoad}
-        center={userPos}
-        zoom={12}
-        mapContainerClassName="w-full h-full rounded-lg"
-        options={{
-          fullscreenControl: false,
-          mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID,
-        }}
-      >
-        {/* Search for a new route if needed */}
-        {shouldRoute && !directionsResult && (
-          <DirectionsService
-            options={{
-              origin,
-              destination: destination!,
-              waypoints,
-              travelMode: google.maps.TravelMode.DRIVING,
-            }}
-            callback={directionsCallback}
-          />
-        )}
+    <div className="flex flex-col h-[100vh]">
+      {/* Map with fixed height */}
+      <div className="h-[50vh] flex-shrink-0">
+        <GoogleMap
+          onLoad={onMapLoad}
+          center={userPos}
+          zoom={12}
+          mapContainerClassName="w-full h-full"
+          options={{
+            fullscreenControl: false,
+            mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID,
+          }}
+        >
+          {shouldRoute && destination && !directionsResult && (
+            <DirectionsService
+              options={{
+                origin,
+                destination,
+                waypoints,
+                travelMode: google.maps.TravelMode.DRIVING,
+                optimizeWaypoints: false,
+              }}
+              callback={directionsCallback}
+            />
+          )}
 
-        {/* Render the updated route */}
-        {directionsResult && (
-          <DirectionsRenderer
-            options={{
-              directions: directionsResult,
-              suppressMarkers: true,
-            }}
-          />
-        )}
-      </GoogleMap>
+          {directionsResult && (
+            <DirectionsRenderer
+              options={{
+                directions: directionsResult,
+                suppressMarkers: true,
+                draggable: true,
+              }}
+            />
+          )}
+        </GoogleMap>
+      </div>
+
+      {/* Custom flow-chart at the bottom with flexible height */}
+      <div className="flex-1 overflow-auto bg-white border-t mt-2 min-h-[25vh] max-h-[40vh]">
+        <RouteFlowChart
+          routeStops={routeOrder}
+          directions={directionsResult}
+          stores={stores}
+        />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Map from "../components/Map";
-import type { RouteStop } from "../components/RouteMap";
+import type { RouteStop } from "../components/Map";
+
+//import type { RouteStop } from "../components/RouteMap";
 
 interface Store {
   name: string;
@@ -68,7 +70,7 @@ function App() {
         console.warn("Geolocation failed:", err.code, err.message);
         setUserPos({ lat: 28.5383, lng: -81.3792});
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 1000000 }
     );
   }, []);
 
