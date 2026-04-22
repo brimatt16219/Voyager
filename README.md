@@ -6,9 +6,9 @@ Voyager is a route optimization platform built to help users plan efficient stor
 
 ---
 
-## 🚀 Features
+## Features
 
-### ✅ Implemented Features
+### Implemented Features
 - **Real-time Location Detection**: Automatically detects user's current location using browser geolocation
 - **Store Search**: Find nearby stores by brand name (e.g., "Target", "Best Buy") within a specified radius
 - **Route Optimization**: Uses 2-opt algorithm to find the most efficient route between stores
@@ -17,7 +17,7 @@ Voyager is a route optimization platform built to help users plan efficient stor
 - **Real-time Traffic**: Considers current traffic conditions for accurate travel times
 - **Responsive Design**: Modern UI built with Tailwind CSS that works on desktop and mobile
 
-### 🎯 Key Capabilities
+### Key Capabilities
 - Search for multiple store chains simultaneously
 - Customizable search radius (in miles)
 - Optimized route calculation with arrival time estimates
@@ -26,7 +26,7 @@ Voyager is a route optimization platform built to help users plan efficient stor
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **React 19** with TypeScript
@@ -48,7 +48,7 @@ Voyager is a route optimization platform built to help users plan efficient stor
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -61,7 +61,7 @@ Voyager is a route optimization platform built to help users plan efficient stor
 
 ---
 
-## 📦 Setup Instructions
+## Setup Instructions
 
 ### 1. Clone the Repository
 
@@ -120,7 +120,7 @@ The backend will run at: http://localhost:5000
 
 ---
 
-## 🏗️ Application Structure
+## Application Structure
 
 ```
 Voyager/
@@ -143,7 +143,7 @@ Voyager/
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### GET `/api/stores`
 Fetches nearby stores based on location and brand names.
@@ -207,7 +207,7 @@ Optimizes the route between stores using 2-opt algorithm.
 
 ---
 
-## 🎯 How It Works
+## How It Works
 
 1. **Location Detection**: The app automatically detects the user's current location
 2. **Store Search**: Users enter store brand names and search radius
@@ -248,7 +248,7 @@ node index.js    # Start server
 
 ---
 
-## 👥 Authors
+## Authors
 
 ### Brian Chang
 - GitHub: [@brimatt16219](https://github.com/brimatt16219)
@@ -262,13 +262,13 @@ node index.js    # Start server
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## 🚀 Deployment (Planned)
+## Deployment (Planned)
 
 - **Frontend**: Vercel deployment
 - **Backend**: Render, Railway, or DigitalOcean
