@@ -25,7 +25,7 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
 
       {/* Horizontal timeline */}
       <div style={{ flex: 1, padding: "14px 16px", overflowX: "auto", overflowY: "hidden" }}>
-        <div style={{ ...mono, fontSize: 9, letterSpacing: "0.14em", color: "#3a3a50", marginBottom: 10, textTransform: "uppercase" }}>
+        <div style={{ ...mono, fontSize: 12, letterSpacing: "0.14em", color: "#3a3a50", marginBottom: 10, textTransform: "uppercase" }}>
           Optimized Route
         </div>
 
@@ -51,14 +51,14 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
               <div key={stop.place_id} style={{ display: "flex", alignItems: "center" }}>
                 {/* Connector with travel time */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0 6px" }}>
-                  <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginBottom: 3, whiteSpace: "nowrap" }}>
+                  <div style={{ ...mono, fontSize: 12, color: "#3a3a50", marginBottom: 3, whiteSpace: "nowrap" }}>
                     {leg ? leg.duration?.text : "—"}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <div style={{ width: 24, height: 1, background: "rgba(124,106,255,0.35)" }} />
                     <div style={{ width: 4, height: 4, borderTop: "1px solid rgba(124,106,255,0.5)", borderRight: "1px solid rgba(124,106,255,0.5)", transform: "rotate(45deg)" }} />
                   </div>
-                  <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginTop: 3, whiteSpace: "nowrap" }}>
+                  <div style={{ ...mono, fontSize: 12, color: "#3a3a50", marginTop: 3, whiteSpace: "nowrap" }}>
                     {leg ? leg.distance?.text : "—"}
                   </div>
                 </div>
@@ -82,13 +82,13 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
                     maxWidth: 150,
                   }}
                 >
-                  <div style={{ ...mono, fontSize: 9, color: "#7c6aff", letterSpacing: "0.08em", marginBottom: 3 }}>
+                  <div style={{ ...mono, fontSize: 12, color: "#7c6aff", letterSpacing: "0.08em", marginBottom: 3 }}>
                     STOP {i + 1}
                   </div>
                   <div style={{ fontSize: 12, fontWeight: 500, color: "#e8e6ff", lineHeight: 1.3 }}>
                     {store?.name ?? "Unknown"}
                   </div>
-                  <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <div style={{ ...mono, fontSize: 12, color: "#3a3a50", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {new Date(stop.arrival_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </div>
                 </button>
@@ -103,7 +103,7 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
               background: "rgba(255,77,109,0.2)",
               border: "1px solid rgba(255,77,109,0.5)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 9, fontWeight: 700, color: "#ff4d6d", ...mono, letterSpacing: "0.05em",
+              fontSize: 12, fontWeight: 700, color: "#ff4d6d", ...mono, letterSpacing: "0.05em",
             }}>END</div>
           </div>
         </div>
@@ -120,13 +120,13 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
             padding: "14px 14px",
             flexShrink: 0,
           }}>
-            <div style={{ ...mono, fontSize: 9, letterSpacing: "0.14em", color: "#7c6aff", marginBottom: 8, textTransform: "uppercase" }}>
+            <div style={{ ...mono, fontSize: 12, letterSpacing: "0.14em", color: "#7c6aff", marginBottom: 8, textTransform: "uppercase" }}>
               Stop {selected + 1} Directions
             </div>
             <div style={{ fontSize: 12, fontWeight: 500, color: "#e8e6ff", marginBottom: 2 }}>
               {store?.name}
             </div>
-            <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginBottom: 12 }}>
+            <div style={{ ...mono, fontSize: 12, color: "#3a3a50", marginBottom: 12 }}>
               {legs[selected].duration?.text} · {legs[selected].distance?.text}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -141,10 +141,10 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
                   }}>{idx + 1}</div>
                   <div>
                     <div
-                      style={{ fontSize: 11, color: "#b8b6d0", lineHeight: 1.5 }}
+                      style={{ fontSize: 13, color: "#b8b6d0", lineHeight: 1.5 }}
                       dangerouslySetInnerHTML={{ __html: step.instructions }}
                     />
-                    <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginTop: 2 }}>
+                    <div style={{ ...mono, fontSize: 12, color: "#3a3a50", marginTop: 2 }}>
                       {step.distance?.text} · {step.duration?.text}
                     </div>
                   </div>
