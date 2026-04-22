@@ -10,7 +10,7 @@ import {
 import RouteFlowChart from "./FlowChart";
 import type { Store, RouteStop } from "../types";
 
-const LIBRARIES: ("places" | "marker")[] = ["places", "marker"];
+const LIBRARIES: ("places")[] = ["places"];
 
 interface MapProps {
   stores: Store[];
@@ -28,21 +28,27 @@ export default function Map({ stores, userPos, routeOrder }: MapProps) {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const onMapLoad = useCallback((m: google.maps.Map) => setMap(m), []);
 
-  const markerRefs = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
+  const markerRefs = useRef<google.maps.Marker[]>([]);
+
   useEffect(() => {
-    if (!map || !window.google?.maps?.marker) return;
-    markerRefs.current.forEach(m => (m.map = null));
+    if (!map) return;
+    markerRefs.current.forEach(m => m.setMap(null));
     markerRefs.current = [];
 
     markerRefs.current.push(
-      new window.google.maps.marker.AdvancedMarkerElement({
-        map, position: userPos, title: "You are here",
+      new google.maps.Marker({
+        map,
+        position: userPos,
+        title: "You are here",
       })
     );
+
     stores.forEach(s => {
       markerRefs.current.push(
-        new window.google.maps.marker.AdvancedMarkerElement({
-          map, position: { lat: s.lat, lng: s.lng }, title: s.name,
+        new google.maps.Marker({
+          map,
+          position: { lat: s.lat, lng: s.lng },
+          title: s.name,
         })
       );
     });
