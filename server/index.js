@@ -45,6 +45,7 @@ app.get('/api/stores', async (req, res) => {
     // Fetch nearby places for each keyword, filtering only exact brand matches
     for (const keyword of keywords) {
       const keywordLower = keyword.toLowerCase();
+      console.log(`[stores] using key ending in: ...${process.env.GOOGLE_MAPS_API_KEY?.slice(-6)}`);
       const { data } = await axios.get(
         'https://maps.googleapis.com/maps/api/place/nearbysearch/json',
         {
@@ -59,7 +60,9 @@ app.get('/api/stores', async (req, res) => {
       );
 
       if (Array.isArray(data.results)) {
-        // Only include main store entries (e.g., "Target", not "Target Optical")
+        console.log(`[stores] status for "${keyword}":`, data.status);
+        console.log(`[stores] error_message:`, data.error_message ?? 'none');
+        console.log(`[stores] raw results for "${keyword}":`, data.results.map(p => p.name));
         const filtered = data.results.filter(place =>
           place.name.toLowerCase() === keywordLower
         );
@@ -95,16 +98,31 @@ app.get('/api/stores', async (req, res) => {
   }
 });
 
+// Deduplicate stores that are at essentially the same location
+// (within ~50 meters of each other) to avoid inflating the matrix
+function deduplicateByProximity(stores, thresholdMeters = 50) {
+  const kept = [];
+  for (const store of stores) {
+    const isDuplicate = kept.some(k => {
+      const dLat = (k.lat - store.lat) * 111000;
+      const dLng = (k.lng - store.lng) * 111000 * Math.cos(k.lat * Math.PI / 180);
+      return Math.sqrt(dLat * dLat + dLng * dLng) < thresholdMeters;
+    });
+    if (!isDuplicate) kept.push(store);
+  }
+  return kept;
+}
+
 // /api/optimize-route
 app.post('/api/optimize-route', async (req, res) => {
   console.log('[/api/optimize-route] request body:', JSON.stringify(req.body));
-  const { start, stores } = req.body;
+  const { start, stores: rawStores } = req.body;
 
   if (
     !start ||
     typeof start.lat !== 'number' ||
     typeof start.lng !== 'number' ||
-    !Array.isArray(stores)
+    !Array.isArray(rawStores)
   ) {
     console.warn('[/api/optimize-route] bad request parameters');
     return res.status(400).json({ error: 'Missing or invalid start/stores in request body' });
@@ -112,6 +130,8 @@ app.post('/api/optimize-route', async (req, res) => {
 
   try {
     const startTime = Date.now();
+    const stores = deduplicateByProximity(rawStores).slice(0, 9);
+    console.log(`[/api/optimize-route] deduped ${rawStores.length} → ${stores.length} stores`);
     const allLocations = [start, ...stores];
     
     // Step 1: Get all pairwise distances in one API call
@@ -131,6 +151,8 @@ app.post('/api/optimize-route', async (req, res) => {
         },
       }
     );
+    console.log('[distance-matrix] status:', distanceMatrixResponse.data.status);
+    console.log('[distance-matrix] error_message:', distanceMatrixResponse.data.error_message ?? 'none');
 
     // Step 2: Build distance matrix
     const distanceMatrix = [];
