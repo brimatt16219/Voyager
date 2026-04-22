@@ -73,7 +73,7 @@ export default function AppPage() {
           </svg>
           <span style={{
             fontFamily: "'Space Mono', monospace",
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: 700,
             letterSpacing: "0.12em",
             color: "#e8e6ff",
@@ -86,7 +86,7 @@ export default function AppPage() {
             <label style={{
               display: "block",
               fontFamily: "'Space Mono', monospace",
-              fontSize: 10,
+              fontSize: 12,
               letterSpacing: "0.12em",
               color: "#6b6a80",
               marginBottom: 6,
@@ -120,7 +120,7 @@ export default function AppPage() {
             <label style={{
               display: "block",
               fontFamily: "'Space Mono', monospace",
-              fontSize: 10,
+              fontSize: 12,
               letterSpacing: "0.12em",
               color: "#6b6a80",
               marginBottom: 6,
@@ -161,7 +161,7 @@ export default function AppPage() {
               borderRadius: 6,
               color: isBusy ? "#6b6a80" : "#0a0a0f",
               fontFamily: "'Space Mono', monospace",
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: 700,
               letterSpacing: "0.1em",
               cursor: isBusy ? "not-allowed" : "pointer",
@@ -176,7 +176,7 @@ export default function AppPage() {
         <div style={{
           marginTop: 12,
           fontFamily: "'Space Mono', monospace",
-          fontSize: 10,
+          fontSize: 12,
           color: error ? "#ff4d6d" : "#3a3a50",
           letterSpacing: "0.08em",
           minHeight: 14,
