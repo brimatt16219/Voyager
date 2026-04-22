@@ -1,149 +1,159 @@
-// src/components/RouteFlowChart.tsx
-import React, { useState } from "react";
-import type { Store, RouteStop } from "../types";
+import { useState, useMemo } from "react";
+import type { RouteStop, Store } from "../types";
 
-
-interface RouteFlowChartProps {
+interface Props {
   routeStops: RouteStop[];
   directions: google.maps.DirectionsResult | null;
   stores: Store[];
 }
 
-const RouteFlowChart: React.FC<RouteFlowChartProps> = ({ routeStops, directions, stores }) => {
-  const [selectedLeg, setSelectedLeg] = useState<number | null>(null);
+export default function RouteFlowChart({ routeStops, directions, stores }: Props) {
+  const [selected, setSelected] = useState<number | null>(null);
 
-  if (!directions) {
-    return (
-      <div className="p-4 h-full flex items-center justify-center">
-        <p className="text-gray-500">No route yet. Search above to see directions.</p>
-      </div>
-    );
-  }
+  const legs = useMemo(
+    () => directions?.routes[0]?.legs ?? [],
+    [directions]
+  );
 
-  const legs = directions.routes[0].legs;
+  const getStore = (placeId: string) =>
+    stores.find(s => s.place_id === placeId);
 
-  // Helper function to get store info by place_id
-  const getStoreInfo = (placeId: string) => {
-    return stores.find(store => store.place_id === placeId);
-  };
+  const mono: React.CSSProperties = { fontFamily: "'Space Mono', monospace" };
 
   return (
-    <div className="h-full flex">
-      {/* Flow Chart - Left Side */}
-      <div className="flex-1 p-4 overflow-auto">
-        <h2 className="font-semibold mb-4 text-center">Route Flow</h2>
-        <div className="flex flex-col items-center space-y-4">
-          {/* Start Point */}
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
-              START
-            </div>
-            <div className="text-xs text-gray-600 mt-1">Your Location</div>
+    <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
+
+      {/* Horizontal timeline */}
+      <div style={{ flex: 1, padding: "14px 16px", overflowX: "auto", overflowY: "hidden" }}>
+        <div style={{ ...mono, fontSize: 9, letterSpacing: "0.14em", color: "#3a3a50", marginBottom: 10, textTransform: "uppercase" }}>
+          Optimized Route
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 0, minWidth: "max-content" }}>
+
+          {/* Start node */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, marginRight: 6 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "linear-gradient(135deg, #00e5c8, #7c6aff)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 9, fontWeight: 700, color: "#0a0a0f", ...mono, letterSpacing: "0.05em",
+            }}>YOU</div>
           </div>
-          
-          {/* Arrow */}
-          <div className="w-0.5 h-8 bg-gray-400"></div>
-          
-          {/* Store Bubbles */}
+
+          {/* Stops */}
           {routeStops.map((stop, i) => {
-            const storeInfo = getStoreInfo(stop.place_id);
-            const isSelected = selectedLeg === i;
-            
+            const store = getStore(stop.place_id);
+            const leg   = legs[i];
+            const isSelected = selected === i;
+
             return (
-              <div key={stop.place_id} className="flex flex-col items-center">
+              <div key={stop.place_id} style={{ display: "flex", alignItems: "center" }}>
+                {/* Connector with travel time */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "0 6px" }}>
+                  <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginBottom: 3, whiteSpace: "nowrap" }}>
+                    {leg ? leg.duration?.text : "—"}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <div style={{ width: 24, height: 1, background: "rgba(124,106,255,0.35)" }} />
+                    <div style={{ width: 4, height: 4, borderTop: "1px solid rgba(124,106,255,0.5)", borderRight: "1px solid rgba(124,106,255,0.5)", transform: "rotate(45deg)" }} />
+                  </div>
+                  <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginTop: 3, whiteSpace: "nowrap" }}>
+                    {leg ? leg.distance?.text : "—"}
+                  </div>
+                </div>
+
+                {/* Stop card */}
                 <button
-                  onClick={() => setSelectedLeg(i)}
-                  className={`
-                    w-32 h-16 rounded-full flex flex-col items-center justify-center text-xs font-medium shadow-lg transition-all duration-200
-                    ${isSelected 
-                      ? 'bg-blue-500 text-white transform scale-110' 
-                      : 'bg-white text-gray-800 hover:bg-blue-100 hover:scale-105 border-2 border-gray-300'
-                    }
-                  `}
+                  onClick={() => setSelected(isSelected ? null : i)}
+                  style={{
+                    background: isSelected
+                      ? "linear-gradient(135deg, rgba(124,106,255,0.25), rgba(0,229,200,0.15))"
+                      : "rgba(255,255,255,0.05)",
+                    border: isSelected
+                      ? "1px solid rgba(124,106,255,0.6)"
+                      : "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.15s",
+                    minWidth: 120,
+                    maxWidth: 150,
+                  }}
                 >
-                  <div className="font-bold">{i + 1}</div>
-                  <div className="text-center leading-tight">
-                    {storeInfo?.name || 'Unknown'}
+                  <div style={{ ...mono, fontSize: 9, color: "#7c6aff", letterSpacing: "0.08em", marginBottom: 3 }}>
+                    STOP {i + 1}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: "#e8e6ff", lineHeight: 1.3 }}>
+                    {store?.name ?? "Unknown"}
+                  </div>
+                  <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {new Date(stop.arrival_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </div>
                 </button>
-                <div className="text-xs text-gray-600 mt-1 text-center max-w-32">
-                  {storeInfo?.address?.split(',')[0] || 'Address'}
-                </div>
-                
-                {/* Arrow to next stop */}
-                {i < routeStops.length - 1 && (
-                  <div className="w-0.5 h-8 bg-gray-400 mt-2"></div>
-                )}
               </div>
             );
           })}
-          
-          {/* End Point */}
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
-              END
-            </div>
-            <div className="text-xs text-gray-600 mt-1">Final Stop</div>
+
+          {/* End node */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginLeft: 6 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "rgba(255,77,109,0.2)",
+              border: "1px solid rgba(255,77,109,0.5)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 9, fontWeight: 700, color: "#ff4d6d", ...mono, letterSpacing: "0.05em",
+            }}>END</div>
           </div>
         </div>
       </div>
 
-      {/* Instructions Panel - Right Side */}
-      <div className="w-80 border-l border-gray-300 bg-gray-50">
-        {selectedLeg !== null && legs[selectedLeg] ? (
-          <div className="p-4 h-full overflow-y-auto">
-            <div className="mb-4">
-              <h3 className="font-semibold text-lg mb-2">
-                Stop {selectedLeg + 1} Directions
-              </h3>
-              {(() => {
-                const storeInfo = getStoreInfo(routeStops[selectedLeg].place_id);
-                return (
-                  <div className="bg-white p-3 rounded-lg shadow-sm mb-4">
-                    <div className="font-medium text-blue-600">{storeInfo?.name || 'Unknown Store'}</div>
-                    <div className="text-sm text-gray-600">{storeInfo?.address || 'Address not available'}</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Arrival: {new Date(routeStops[selectedLeg].arrival_time).toLocaleTimeString()}
-                    </div>
-                  </div>
-                );
-              })()}
+      {/* Step-by-step panel — only shows when a stop is selected */}
+      {selected !== null && legs[selected] && (() => {
+        const store = getStore(routeStops[selected].place_id);
+        return (
+          <div style={{
+            width: 240,
+            borderLeft: "1px solid rgba(124,106,255,0.15)",
+            overflowY: "auto",
+            padding: "14px 14px",
+            flexShrink: 0,
+          }}>
+            <div style={{ ...mono, fontSize: 9, letterSpacing: "0.14em", color: "#7c6aff", marginBottom: 8, textTransform: "uppercase" }}>
+              Stop {selected + 1} Directions
             </div>
-            
-            <div className="space-y-3">
-              <h4 className="font-medium text-gray-700">Step-by-step directions:</h4>
-              {legs[selectedLeg].steps.map((step, idx) => (
-                <div key={idx} className="bg-white p-3 rounded-lg shadow-sm">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-6 h-6 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      {idx + 1}
-                    </div>
-                    <div className="flex-1">
-                      <div
-                        className="text-sm leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: step.instructions }}
-                      />
-                      <div className="text-xs text-gray-500 mt-2 flex items-center space-x-4">
-                        <span>📏 {step.distance?.text}</span>
-                        <span>⏱️ {step.duration?.text}</span>
-                      </div>
+            <div style={{ fontSize: 12, fontWeight: 500, color: "#e8e6ff", marginBottom: 2 }}>
+              {store?.name}
+            </div>
+            <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginBottom: 12 }}>
+              {legs[selected].duration?.text} · {legs[selected].distance?.text}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {legs[selected].steps.map((step, idx) => (
+                <div key={idx} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <div style={{
+                    width: 16, height: 16, borderRadius: "50%",
+                    background: "rgba(124,106,255,0.2)",
+                    border: "1px solid rgba(124,106,255,0.3)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 8, color: "#7c6aff", flexShrink: 0, marginTop: 1, ...mono,
+                  }}>{idx + 1}</div>
+                  <div>
+                    <div
+                      style={{ fontSize: 11, color: "#b8b6d0", lineHeight: 1.5 }}
+                      dangerouslySetInnerHTML={{ __html: step.instructions }}
+                    />
+                    <div style={{ ...mono, fontSize: 9, color: "#3a3a50", marginTop: 2 }}>
+                      {step.distance?.text} · {step.duration?.text}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        ) : (
-          <div className="p-4 h-full flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <div className="text-4xl mb-2">👆</div>
-              <p>Click on any stop bubble to see directions</p>
-            </div>
-          </div>
-        )}
-      </div>
+        );
+      })()}
     </div>
   );
-};
-
-export default RouteFlowChart;
+}
