@@ -32,7 +32,7 @@ export default function Map({ stores, userPos, routeOrder }: MapProps) {
   const markerRefs = useRef<google.maps.Marker[]>([]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !Array.isArray(stores)) return;
     markerRefs.current.forEach(m => m.setMap(null));
     markerRefs.current = [];
 
