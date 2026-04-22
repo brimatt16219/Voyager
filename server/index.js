@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://your-vercel-app.vercel.app', // replace with your actual Vercel URL
+    'https://voyager-rose-seven.vercel.app',
   ],
   methods: ['GET', 'POST'],
 }));
