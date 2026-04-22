@@ -20,6 +20,7 @@ interface MapProps {
 
 
 export default function Map({ stores, userPos, routeOrder }: MapProps) {
+  const [selectedStop, setSelectedStop] = useState<number | null>(null);
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
@@ -128,26 +129,28 @@ export default function Map({ stores, userPos, routeOrder }: MapProps) {
       {/* Route timeline — floating strip at the bottom */}
       {routeOrder.length > 0 && (
         <div style={{
-          position: "absolute",
-          bottom: 20,
-          left: 340,
-          right: 20,
-          background: "rgba(10,10,20,0.82)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
-          border: "1px solid rgba(124,106,255,0.2)",
-          borderRadius: 12,
-          zIndex: 10,
-          maxHeight: "55vh",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          transition: "max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
-        }}>
+            position: "absolute",
+            bottom: 20,
+            left: 340,
+            right: 20,
+            background: "rgba(10,10,20,0.82)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: "1px solid rgba(124,106,255,0.2)",
+            borderRadius: 12,
+            zIndex: 10,
+            maxHeight: selectedStop !== null ? "55vh" : "130px",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            transition: "max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}>
           <RouteFlowChart
             routeStops={routeOrder}
             directions={directionsResult}
             stores={stores}
+            selected={selectedStop}
+            onSelect={setSelectedStop}
           />
         </div>
       )}

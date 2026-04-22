@@ -1,14 +1,15 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import type { RouteStop, Store } from "../types";
 
 interface Props {
   routeStops: RouteStop[];
   directions: google.maps.DirectionsResult | null;
   stores: Store[];
+  selected: number | null;
+  onSelect: (i: number | null) => void;
 }
 
-export default function RouteFlowChart({ routeStops, directions, stores }: Props) {
-  const [selected, setSelected] = useState<number | null>(null);
+export default function RouteFlowChart({ routeStops, directions, stores, selected, onSelect }: Props) {
 
   const legs = useMemo(
     () => directions?.routes[0]?.legs ?? [],
@@ -77,7 +78,7 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
 
                 {/* Stop card */}
                 <button
-                  onClick={() => setSelected(isSelected ? null : i)}
+                  onClick={() => onSelect(selected === i ? null : i)}
                   style={{
                     background: isSelected
                       ? "linear-gradient(135deg, rgba(124,106,255,0.3), rgba(0,229,200,0.15))"
