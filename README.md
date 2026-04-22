@@ -1,6 +1,6 @@
 # Voyager
 
-**Current Deployment URL**: (Coming soon...)
+**Current Deployment URL**: https://voyager-rose-seven.vercel.app/
 
 Voyager is a route optimization platform built to help users plan efficient store visits based on their current location, real-time traffic, and store opening hours. Voyager ensures maximum store coverage and minimal travel time using advanced route optimization algorithms.
 
