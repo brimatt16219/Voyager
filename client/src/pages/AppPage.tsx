@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useVoyagerStore } from "../store/useVoyagerStore";
 import { useGeolocation } from "../hooks/useGeolocation";
 import { useStoreSearch } from "../hooks/useStoreSearch";
-import { useRouteOptimizer } from "../hooks/useRouteOptimizer";
+import { useRouteOptimizer } from "../hooks/useRouteOptimizer.ts";
 import Map from "../components/Map";
 
 export default function AppPage() {
