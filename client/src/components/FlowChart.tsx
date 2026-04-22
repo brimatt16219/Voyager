@@ -21,7 +21,7 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
   const mono: React.CSSProperties = { fontFamily: "'Space Mono', monospace" };
 
   return (
-    <div style={{ display: "flex", height: "100%", minHeight: 0 }}>
+    <div style={{ display: "flex", height: "100%", minHeight: 0, overflow: "hidden" }}>
 
       {/* Horizontal timeline */}
       <div style={{ flex: 1, padding: "14px 16px", overflowX: "auto", overflowY: "hidden" }}>
@@ -132,6 +132,7 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
             overflowX: "hidden",
             padding: "16px 18px",
             flexShrink: 0,
+            maxHeight: "55vh",
           }}>
             {/* Panel header */}
             <div style={{ ...mono, fontSize: 11, letterSpacing: "0.14em", color: "#a89aff", marginBottom: 10, textTransform: "uppercase" }}>
