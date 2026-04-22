@@ -121,66 +121,66 @@ export default function RouteFlowChart({ routeStops, directions, stores }: Props
         </div>
       </div>
 
-      {/* Step-by-step panel — only shows when a stop is selected */}
-      {selected !== null && legs[selected] && (() => {
-        const store = getStore(routeStops[selected].place_id);
-        return (
-          <div style={{
-            width: 320,
-            borderLeft: "1px solid rgba(124,106,255,0.15)",
-            overflowY: "auto",
-            overflowX: "hidden",
-            padding: "16px 18px",
-            flexShrink: 0,
-            maxHeight: "55vh",
-          }}>
-            {/* Panel header */}
-            <div style={{ ...mono, fontSize: 11, letterSpacing: "0.14em", color: "#a89aff", marginBottom: 10, textTransform: "uppercase" }}>
-              Stop {selected + 1} Directions
-            </div>
-            <div style={{ fontSize: 15, fontWeight: 600, color: "#e8e6ff", marginBottom: 3 }}>
-              {store?.name}
-            </div>
-            <div style={{ ...mono, fontSize: 11, color: "#6b6a80", marginBottom: 14 }}>
-              {legs[selected].duration?.text} · {legs[selected].distance?.text}
-            </div>
-
-            {/* Steps */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {legs[selected].steps.map((step, idx) => (
-                <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  {/* Step number */}
-                  <div style={{
-                    width: 20, height: 20, borderRadius: "50%",
-                    background: "rgba(124,106,255,0.2)",
-                    border: "1px solid rgba(124,106,255,0.35)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 10, color: "#a89aff", flexShrink: 0, marginTop: 2, ...mono,
-                  }}>{idx + 1}</div>
-
-                  {/* Instruction + meta */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{
-                        fontSize: 13,
-                        color: "#c8c6e0",
-                        lineHeight: 1.6,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        overflowWrap: "break-word",
-                      }}
-                      dangerouslySetInnerHTML={{ __html: step.instructions }}
-                    />
-                    <div style={{ ...mono, fontSize: 11, color: "#6b6a80", marginTop: 4 }}>
-                      {step.distance?.text} · {step.duration?.text}
+      {/* Step-by-step panel — always rendered, animates width open/closed */}
+      <div style={{
+        width: selected !== null && legs[selected] ? 320 : 0,
+        borderLeft: selected !== null && legs[selected]
+          ? "1px solid rgba(124,106,255,0.15)"
+          : "none",
+        overflowY: selected !== null ? "auto" : "hidden",
+        overflowX: "hidden",
+        padding: selected !== null && legs[selected] ? "16px 18px" : "0",
+        flexShrink: 0,
+        maxHeight: "55vh",
+        transition: "width 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
+      }}>
+        {selected !== null && legs[selected] && (() => {
+          const store = getStore(routeStops[selected].place_id);
+          return (
+            <>
+              <div style={{ ...mono, fontSize: 11, letterSpacing: "0.14em", color: "#a89aff", marginBottom: 10, textTransform: "uppercase" }}>
+                Stop {selected + 1} Directions
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#e8e6ff", marginBottom: 3 }}>
+                {store?.name}
+              </div>
+              <div style={{ ...mono, fontSize: 11, color: "#6b6a80", marginBottom: 14 }}>
+                {legs[selected].duration?.text} · {legs[selected].distance?.text}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {legs[selected].steps.map((step, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div style={{
+                      width: 20, height: 20, borderRadius: "50%",
+                      background: "rgba(124,106,255,0.2)",
+                      border: "1px solid rgba(124,106,255,0.35)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 10, color: "#a89aff", flexShrink: 0, marginTop: 2, ...mono,
+                    }}>{idx + 1}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#c8c6e0",
+                          lineHeight: 1.6,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                          overflowWrap: "break-word",
+                        }}
+                        dangerouslySetInnerHTML={{ __html: step.instructions }}
+                      />
+                      <div style={{ ...mono, fontSize: 11, color: "#6b6a80", marginTop: 4 }}>
+                        {step.distance?.text} · {step.duration?.text}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
+                ))}
+              </div>
+            </>
+          );
+        })()}
+      </div>
+
     </div>
   );
 }

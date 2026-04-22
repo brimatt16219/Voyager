@@ -130,7 +130,7 @@ export default function Map({ stores, userPos, routeOrder }: MapProps) {
         <div style={{
           position: "absolute",
           bottom: 20,
-          left: 340,   // clears the search panel
+          left: 340,
           right: 20,
           background: "rgba(10,10,20,0.82)",
           backdropFilter: "blur(16px)",
@@ -138,10 +138,13 @@ export default function Map({ stores, userPos, routeOrder }: MapProps) {
           border: "1px solid rgba(124,106,255,0.2)",
           borderRadius: 12,
           zIndex: 10,
-          maxHeight: "55vh",
+          maxHeight: routeOrder.length > 0 && directionsResult
+            ? "55vh"
+            : "140px",
           overflow: "hidden",
-          display: "flex",    
-          flexDirection: "column", 
+          display: "flex",
+          flexDirection: "column",
+          transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",  // add this
         }}>
           <RouteFlowChart
             routeStops={routeOrder}
