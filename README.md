@@ -219,7 +219,7 @@ Optimizes the route between stores using 2-opt algorithm.
 
 ---
 
-## 🔧 Development
+## Development
 
 ### Available Scripts
 
