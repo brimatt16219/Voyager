@@ -18,17 +18,17 @@ interface MapProps {
 }
 
 // Dark map style — matches the mission control aesthetic
-const DARK_STYLE: google.maps.MapTypeStyle[] = [
-  { elementType: "geometry",        stylers: [{ color: "#0f0f1a" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f0f1a" }] },
-  { elementType: "labels.text.fill",   stylers: [{ color: "#4a4a6a" }] },
-  { featureType: "road",            elementType: "geometry",      stylers: [{ color: "#1a1a2e" }] },
-  { featureType: "road",            elementType: "geometry.stroke", stylers: [{ color: "#0d0d1a" }] },
-  { featureType: "road.highway",    elementType: "geometry",      stylers: [{ color: "#2a1a5e" }] },
-  { featureType: "water",           elementType: "geometry",      stylers: [{ color: "#0a0a1a" }] },
-  { featureType: "poi",             elementType: "labels",        stylers: [{ visibility: "off" }] },
-  { featureType: "transit",         elementType: "labels",        stylers: [{ visibility: "off" }] },
-];
+// const DARK_STYLE: google.maps.MapTypeStyle[] = [
+//   { elementType: "geometry",        stylers: [{ color: "#0f0f1a" }] },
+//   { elementType: "labels.text.stroke", stylers: [{ color: "#0f0f1a" }] },
+//   { elementType: "labels.text.fill",   stylers: [{ color: "#4a4a6a" }] },
+//   { featureType: "road",            elementType: "geometry",      stylers: [{ color: "#1a1a2e" }] },
+//   { featureType: "road",            elementType: "geometry.stroke", stylers: [{ color: "#0d0d1a" }] },
+//   { featureType: "road.highway",    elementType: "geometry",      stylers: [{ color: "#2a1a5e" }] },
+//   { featureType: "water",           elementType: "geometry",      stylers: [{ color: "#0a0a1a" }] },
+//   { featureType: "poi",             elementType: "labels",        stylers: [{ visibility: "off" }] },
+//   { featureType: "transit",         elementType: "labels",        stylers: [{ visibility: "off" }] },
+// ];
 
 export default function Map({ stores, userPos, routeOrder }: MapProps) {
   const { isLoaded, loadError } = useLoadScript({
