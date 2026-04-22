@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Store, RouteStop, OptimizeRouteResponse } from "../types";
+import type { Store, OptimizeRouteResponse } from "../types";
 
 // In dev: Vite proxies /api → localhost:5000
 // In prod: set VITE_API_URL=https://your-backend.railway.app
