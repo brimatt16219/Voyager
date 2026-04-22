@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { RouteStop, Store } from "../types";
 
 interface Props {
@@ -10,6 +10,18 @@ interface Props {
 }
 
 export default function RouteFlowChart({ routeStops, directions, stores, selected, onSelect }: Props) {
+  const [displayedStop, setDisplayedStop] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (selected !== null) {
+      // Opening — show content immediately
+      setDisplayedStop(selected);
+    } else {
+      // Closing — wait for transition to finish before unmounting content
+      const timer = setTimeout(() => setDisplayedStop(null), 350);
+      return () => clearTimeout(timer);
+    }
+  }, [selected]);
 
   const legs = useMemo(
     () => directions?.routes[0]?.legs ?? [],
@@ -78,7 +90,7 @@ export default function RouteFlowChart({ routeStops, directions, stores, selecte
 
                 {/* Stop card */}
                 <button
-                  onClick={() => onSelect(selected === i ? null : i)}
+                  onClick={() => onSelect(isSelected ? null : i)}
                   style={{
                     background: isSelected
                       ? "linear-gradient(135deg, rgba(124,106,255,0.3), rgba(0,229,200,0.15))"
@@ -122,7 +134,7 @@ export default function RouteFlowChart({ routeStops, directions, stores, selecte
         </div>
       </div>
 
-      {/* Step-by-step panel — always rendered, animates width open/closed */}
+      {/* Step-by-step panel — width transitions open/closed, content unmounts after close */}
       <div style={{
         width: selected !== null && legs[selected] ? 320 : 0,
         borderLeft: selected !== null && legs[selected]
@@ -135,21 +147,21 @@ export default function RouteFlowChart({ routeStops, directions, stores, selecte
         maxHeight: "55vh",
         transition: "width 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
       }}>
-        {selected !== null && legs[selected] && (() => {
-          const store = getStore(routeStops[selected].place_id);
+        {displayedStop !== null && legs[displayedStop] && (() => {
+          const store = getStore(routeStops[displayedStop].place_id);
           return (
             <>
               <div style={{ ...mono, fontSize: 11, letterSpacing: "0.14em", color: "#a89aff", marginBottom: 10, textTransform: "uppercase" }}>
-                Stop {selected + 1} Directions
+                Stop {displayedStop + 1} Directions
               </div>
               <div style={{ fontSize: 15, fontWeight: 600, color: "#e8e6ff", marginBottom: 3 }}>
                 {store?.name}
               </div>
               <div style={{ ...mono, fontSize: 11, color: "#6b6a80", marginBottom: 14 }}>
-                {legs[selected].duration?.text} · {legs[selected].distance?.text}
+                {legs[displayedStop].duration?.text} · {legs[displayedStop].distance?.text}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {legs[selected].steps.map((step, idx) => (
+                {legs[displayedStop].steps.map((step, idx) => (
                   <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                     <div style={{
                       width: 20, height: 20, borderRadius: "50%",
