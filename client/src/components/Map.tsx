@@ -102,7 +102,7 @@ export default function Map({ stores, userPos, routeOrder }: MapProps) {
           streetViewControl: false,
           mapTypeControl: false,
           zoomControlOptions: { position: 7 }, // right-center
-          mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID,
+          // mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID,
         }}
       >
         {shouldRoute && destination && !directionsResult && (
