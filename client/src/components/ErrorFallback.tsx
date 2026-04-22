@@ -1,9 +1,6 @@
-interface Props {
-  error: Error;
-  resetErrorBoundary: () => void;
-}
+import type { FallbackProps } from "react-error-boundary";
 
-export default function ErrorFallback({ error, resetErrorBoundary }: Props) {
+export default function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   return (
     <div style={{
       width: "100vw",
@@ -38,7 +35,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }: Props) {
           marginBottom: 24,
           lineHeight: 1.6,
         }}>
-          {error.message}
+          {error instanceof Error ? error.message : "An unexpected error occurred."}
         </div>
         <button
           onClick={resetErrorBoundary}
