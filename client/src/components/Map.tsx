@@ -138,13 +138,11 @@ export default function Map({ stores, userPos, routeOrder }: MapProps) {
           border: "1px solid rgba(124,106,255,0.2)",
           borderRadius: 12,
           zIndex: 10,
-          maxHeight: routeOrder.length > 0 && directionsResult
-            ? "55vh"
-            : "140px",
+          maxHeight: "55vh",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          transition: "max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)",  // add this
+          transition: "max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1)",
         }}>
           <RouteFlowChart
             routeStops={routeOrder}
