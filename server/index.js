@@ -6,7 +6,13 @@ require('dotenv').config();
 console.log('🔄 Starting Voyager backend...');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://your-vercel-app.vercel.app', // replace with your actual Vercel URL
+  ],
+  methods: ['GET', 'POST'],
+}));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
