@@ -1,3 +1,4 @@
+console.log('Maps key present:', !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
 // src/components/Map.tsx
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
