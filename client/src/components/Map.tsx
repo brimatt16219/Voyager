@@ -7,25 +7,11 @@ import {
   DirectionsRenderer,
 } from "@react-google-maps/api";
 import RouteFlowChart from "./FlowChart";
+import type { Store, RouteStop } from "../types";
 
 // load both the places & marker libs
 const LIBRARIES: ("places" | "marker")[] = ["places", "marker"];
 
-export interface RouteStop {
-  place_id: string;
-  arrival_time: string;
-  coords: { lat: number; lng: number };
-  name: string;
-  address: string;
-}
-
-interface Store {
-  name: string;
-  lat: number;
-  lng: number;
-  place_id: string;
-  address: string;
-}
 
 interface MapProps {
   stores: Store[];

@@ -1,14 +1,7 @@
 // src/components/RouteFlowChart.tsx
 import React, { useState } from "react";
-import type { RouteStop } from "./Map";
+import type { Store, RouteStop } from "../types";
 
-interface Store {
-  name: string;
-  lat: number;
-  lng: number;
-  place_id: string;
-  address: string;
-}
 
 interface RouteFlowChartProps {
   routeStops: RouteStop[];
