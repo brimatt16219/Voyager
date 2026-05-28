@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary } from "react-error-boundary";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorFallback from "./components/ErrorFallback";
 import "./index.css";
 
-const Home    = lazy(() => import("./pages/Home"));
-const AppPage = lazy(() => import("./pages/AppPage"));
+const Home      = lazy(() => import("./pages/Home"));
+const AppPage   = lazy(() => import("./pages/AppPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
 
 const queryClient = new QueryClient();
 
@@ -41,13 +44,22 @@ function PageWrapper({ children }: { children: React.ReactNode }) {
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <Routes>
-          <Route path="/"    element={<PageWrapper><Home /></PageWrapper>} />
-          <Route path="/app" element={<PageWrapper><AppPage /></PageWrapper>} />
-          <Route path="*"    element={<Navigate to="/" replace />} />
-        </Routes>
-      </QueryClientProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <Routes>
+            <Route path="/"      element={<PageWrapper><Home /></PageWrapper>} />
+            <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
+            <Route path="/app"   element={
+              <PageWrapper>
+                <ProtectedRoute>
+                  <AppPage />
+                </ProtectedRoute>
+              </PageWrapper>
+            } />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </QueryClientProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>
 );
