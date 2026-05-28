@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "firebase": "^12.13.0",
     "react-error-boundary": "^6.1.1"
   }
 }
