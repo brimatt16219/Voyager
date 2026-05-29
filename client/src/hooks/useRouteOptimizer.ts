@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useVoyagerStore } from "../store/useVoyagerStore";
-import { optimizeRoute } from "../api/voyager";
+import { optimizeRoute, saveVoyage } from "../api/voyager";
+import { useAuth } from "../context/AuthContext";
 
 export function useRouteOptimizer() {
   const stores          = useVoyagerStore((s) => s.stores);
@@ -9,19 +10,39 @@ export function useRouteOptimizer() {
   const setIsOptimizing = useVoyagerStore((s) => s.setIsOptimizing);
   const setError        = useVoyagerStore((s) => s.setError);
 
+  const { user } = useAuth();
+
   useEffect(() => {
     if (!stores.length || !userPos) return;
 
-    const pos = userPos; // captured reference — no ! needed
+    const pos = userPos;
     let cancelled = false;
 
     async function optimize() {
       try {
         setIsOptimizing(true);
         setError(null);
+
         const result = await optimizeRoute({ start: pos, stores });
+
         if (!cancelled) {
           setRouteOrder(result.order);
+
+          // Auto-save if user is logged in
+          if (user) {
+            try {
+              await saveVoyage({
+                startLocation: pos,
+                stores,
+                routeOrder: result.order,
+                stats: result.optimization_stats,
+              });
+              console.log("[voyager] voyage auto-saved");
+            } catch (saveErr) {
+              // Don't surface save errors to the user — route still works
+              console.warn("[voyager] auto-save failed:", saveErr);
+            }
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -29,9 +50,7 @@ export function useRouteOptimizer() {
           setError("Could not optimize route. Try again.");
         }
       } finally {
-        if (!cancelled) {
-          setIsOptimizing(false);
-        }
+        if (!cancelled) setIsOptimizing(false);
       }
     }
 

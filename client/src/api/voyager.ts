@@ -4,12 +4,10 @@ import type { Store, OptimizeRouteResponse } from "../types";
 
 const BASE = import.meta.env.VITE_API_URL ?? "";
 
-// Attach the Firebase ID token to every request if a user is logged in
-async function authHeaders(): Promise<Record<string, string>> {
-  const user = auth.currentUser;
-  if (!user) return {};
-  const token = await user.getIdToken();
-  return { Authorization: `Bearer ${token}` };
+// Attach the Firebase ID token to every request
+async function authHeaders() {
+  const token = await auth.currentUser?.getIdToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export async function fetchStores(params: {
@@ -26,7 +24,6 @@ export async function fetchStores(params: {
       chains: params.chains.join(","),
       radius: radiusMeters,
     },
-    headers: await authHeaders(),
   });
   return data;
 }
@@ -37,8 +34,7 @@ export async function optimizeRoute(params: {
 }): Promise<OptimizeRouteResponse> {
   const { data } = await axios.post<OptimizeRouteResponse>(
     `${BASE}/api/optimize-route`,
-    params,
-    { headers: await authHeaders() }
+    params
   );
   return data;
 }
@@ -46,35 +42,14 @@ export async function optimizeRoute(params: {
 export async function saveVoyage(params: {
   startLocation: { lat: number; lng: number };
   stores: Store[];
-  routeOrder: { place_id: string; arrival_time: string; coords: { lat: number; lng: number }; name: string; address: string }[];
-  stats: { total_distance_meters: number; total_duration_seconds: number; optimization_time_ms: number };
-}): Promise<void> {
-  const { data } = await axios.post(
+  routeOrder: OptimizeRouteResponse["order"];
+  stats: OptimizeRouteResponse["optimization_stats"];
+}): Promise<{ voyageId: string }> {
+  const headers = await authHeaders();
+  const { data } = await axios.post<{ voyageId: string }>(
     `${BASE}/api/voyages`,
     params,
-    { headers: await authHeaders() }
+    { headers }
   );
-  return data;
-}
-
-export async function fetchProfile(userId: string): Promise<{
-  user: {
-    uid: string;
-    displayName: string;
-    photoURL: string;
-    totalVoyages: number;
-    totalDistanceMeters: number;
-    totalDurationSeconds: number;
-  };
-  voyages: {
-    id: string;
-    createdAt: string;
-    stores: Store[];
-    stats: { total_distance_meters: number; total_duration_seconds: number };
-  }[];
-}> {
-  const { data } = await axios.get(`${BASE}/api/profile/${userId}`, {
-    headers: await authHeaders(),
-  });
   return data;
 }
