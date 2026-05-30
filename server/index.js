@@ -330,6 +330,8 @@ app.get('/api/profile/:userId', async (req, res) => {
   }
 });
 
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
 // Helper function: 2-opt algorithm for route optimization
 function optimizeRouteWith2Opt(distanceMatrix, numStores) {
   // Start with nearest neighbor solution
