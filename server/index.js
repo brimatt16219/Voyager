@@ -3,12 +3,27 @@ const cors = require('cors');
 const axios = require('axios');
 require('dotenv').config();
 
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore }        = require('firebase-admin/firestore');
+const { requireAuth }         = require('./middleware/auth');
+
+initializeApp({
+  credential: cert({
+    projectId:   process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey:  process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  }),
+});
+
+const db = getFirestore();
+
 console.log('🔄 Starting Voyager backend...');
 
 const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'https://localhost:5173',
     'https://voyager-rose-seven.vercel.app',
   ],
   methods: ['GET', 'POST'],
@@ -93,8 +108,8 @@ app.get('/api/stores', async (req, res) => {
       }
     }
 
-    // Limit to at most 10 stores
-    const limited = unique.slice(0, 10);
+    // Limit to at most 20 stores
+    const limited = unique.slice(0, 20);
 
     return res.json(limited);
 
@@ -136,7 +151,7 @@ app.post('/api/optimize-route', async (req, res) => {
 
   try {
     const startTime = Date.now();
-    const stores = deduplicateByProximity(rawStores).slice(0, 9);
+    const stores = deduplicateByProximity(rawStores).slice(0, 20);
     console.log(`[/api/optimize-route] deduped ${rawStores.length} → ${stores.length} stores`);
     const allLocations = [start, ...stores];
     
@@ -244,6 +259,78 @@ app.post('/api/optimize-route', async (req, res) => {
     });
   }
 });
+
+// POST /api/voyages — save a completed voyage (auth required)
+app.post('/api/voyages', requireAuth, async (req, res) => {
+  const { startLocation, stores, routeOrder, stats } = req.body;
+  const userId = req.user.uid;
+
+  if (!startLocation || !stores || !routeOrder || !stats) {
+    return res.status(400).json({ error: 'Missing required voyage fields' });
+  }
+
+  try {
+    const voyageRef = db.collection('voyages').doc();
+    const userRef   = db.collection('users').doc(userId);
+
+    await db.runTransaction(async (tx) => {
+      const userSnap = await tx.get(userRef);
+      if (!userSnap.exists) throw new Error('User not found');
+
+      const prev = userSnap.data();
+
+      tx.set(voyageRef, {
+        userId,
+        createdAt:     new Date(),
+        startLocation,
+        stores,
+        routeOrder,
+        stats,
+      });
+
+      tx.update(userRef, {
+        totalVoyages:         (prev.totalVoyages         || 0) + 1,
+        totalDistanceMeters:  (prev.totalDistanceMeters  || 0) + (stats.total_distance_meters  || 0),
+        totalDurationSeconds: (prev.totalDurationSeconds || 0) + (stats.total_duration_seconds || 0),
+      });
+    });
+
+    console.log(`[/api/voyages] saved voyage ${voyageRef.id} for user ${userId}`);
+    return res.json({ voyageId: voyageRef.id });
+
+  } catch (err) {
+    console.error('[/api/voyages] ERROR:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/profile/:userId — get user profile + voyage history (public)
+app.get('/api/profile/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const userSnap = await db.collection('users').doc(userId).get();
+    if (!userSnap.exists) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const voyagesSnap = await db.collection('voyages')
+      .where('userId', '==', userId)
+      .orderBy('createdAt', 'desc')
+      .limit(20)
+      .get();
+
+    const voyages = voyagesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    return res.json({ user: userSnap.data(), voyages });
+
+  } catch (err) {
+    console.error('[/api/profile] ERROR:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Helper function: 2-opt algorithm for route optimization
 function optimizeRouteWith2Opt(distanceMatrix, numStores) {

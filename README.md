@@ -1,250 +1,216 @@
 # Voyager
 
-**Current Deployment URL**: https://voyager-rose-seven.vercel.app/
+**Live App**: https://voyager-rose-seven.vercel.app/
 
-Voyager is a route optimization platform built to help users plan efficient store visits based on their current location, real-time traffic, and store opening hours. Voyager ensures maximum store coverage and minimal travel time using advanced route optimization algorithms.
+Voyager is a multi-stop retail route optimizer. Sign in with Google, search for nearby store chains, and get an optimized driving route with real-time traffic, turn-by-turn directions, and automatic voyage history saved to your account.
 
 ---
 
 ## Features
 
-### Implemented Features
-- **Real-time Location Detection**: Automatically detects user's current location using browser geolocation
-- **Store Search**: Find nearby stores by brand name (e.g., "Target", "Best Buy") within a specified radius
-- **Route Optimization**: Uses 2-opt algorithm to find the most efficient route between stores
-- **Interactive Map**: Google Maps integration with custom markers and turn-by-turn directions
-- **Route Flow Chart**: Visual representation of the optimized route with step-by-step directions
-- **Real-time Traffic**: Considers current traffic conditions for accurate travel times
-- **Responsive Design**: Modern UI built with Tailwind CSS that works on desktop and mobile
-
-### Key Capabilities
-- Search for multiple store chains simultaneously
-- Customizable search radius (in miles)
-- Optimized route calculation with arrival time estimates
-- Interactive route visualization with clickable stops
-- Detailed turn-by-turn navigation instructions
+- **Google OAuth** — Sign in with Google, voyages auto-saved to your account
+- **Smart Store Search** — Google Places-powered chain search with chip selection (up to 20 stores)
+- **Route Optimization** — Nearest Neighbor seeding + 2-Opt local search for near-optimal TSP solutions
+- **Real-time Traffic** — Distance Matrix API factors in live traffic for accurate arrival times
+- **Turn-by-turn Directions** — Expandable per-stop directions in the route flowchart
+- **Voyage History** — Profile page with lifetime stats (total voyages, distance, drive time)
+- **Mobile Responsive** — Bottom tab navigation on mobile (Search / Map / Route)
+- **PWA** — Installable on mobile via browser prompt
 
 ---
 
 ## Tech Stack
 
 ### Frontend
-- **React 19** with TypeScript
-- **Vite** for fast development and building
-- **React Router DOM** for navigation
-- **@react-google-maps/api** for Google Maps integration
-- **Axios** for API communication
-- **Tailwind CSS** for styling
-- **Advanced Google Maps Markers** for enhanced map experience
+- **React 19** + TypeScript + Vite
+- **Firebase SDK** — Google Auth + Firestore
+- **React Router v6** + **TanStack Query**
+- **Zustand** for client state
+- **@react-google-maps/api** — Maps, Directions, Places Autocomplete
+- **vite-plugin-pwa** — Service worker + web manifest
 
 ### Backend
-- **Node.js** with Express.js
-- **Google Maps Platform APIs**:
-  - Places API (Nearby Search)
-  - Distance Matrix API
-  - Directions API
-- **CORS** for cross-origin requests
-- **dotenv** for environment management
+- **Node.js** + Express
+- **Firebase Admin SDK** — ID token verification, Firestore reads/writes
+- **Google Maps Platform** — Places API, Distance Matrix API, Directions API
+
+### Infrastructure
+- **Vercel** — Frontend hosting (auto-deploy from `main`)
+- **Railway** — Backend hosting (auto-deploy from `main`)
+- **GitHub Actions** — CI/CD: lint → build → deploy on push to `main`, GitHub Release on `v*` tags
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js (v16 or higher recommended)
-- Google Maps API key with the following APIs enabled:
+- Node.js v18+
+- Google Maps API key with these APIs enabled:
+  - Maps JavaScript API
   - Places API
   - Distance Matrix API
   - Directions API
-  - Maps JavaScript API
+- Firebase project with Google Auth and Firestore enabled
 
----
-
-## Setup Instructions
-
-### 1. Clone the Repository
+### 1. Clone
 
 ```bash
 git clone https://github.com/brimatt16219/Voyager.git
 cd Voyager
 ```
 
-### 2. Frontend Setup
-
-Navigate to the frontend directory and install dependencies:
+### 2. Frontend setup
 
 ```bash
 cd client
 npm install
 ```
 
-Create a `.env` file in the `client/` directory:
+Create `client/.env`:
 
 ```env
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
-VITE_GOOGLE_MAPS_MAP_ID=your_map_id_here
+VITE_GOOGLE_MAPS_API_KEY=your_key
+VITE_GOOGLE_MAPS_MAP_ID=your_map_id
+VITE_FIREBASE_API_KEY=your_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_API_URL=
 ```
 
-Start the development server:
+> Leave `VITE_API_URL` empty for local dev — Vite proxies `/api` to `localhost:5000` automatically.
 
 ```bash
 npm run dev
 ```
 
-The frontend will run at: http://localhost:5173
-
-### 3. Backend Setup
-
-Navigate to the backend directory and install dependencies:
+### 3. Backend setup
 
 ```bash
-cd ../server
+cd server
 npm install
 ```
 
-Create a `.env` file in the `server/` directory:
+Create `server/.env`:
 
 ```env
-GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+GOOGLE_MAPS_API_KEY=your_key
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_CLIENT_EMAIL=your_service_account_email
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 PORT=5000
 ```
-
-Start the backend server:
 
 ```bash
 node index.js
 ```
 
-The backend will run at: http://localhost:5000
-
 ---
 
-## Application Structure
+## Project Structure
 
 ```
 Voyager/
-├── client/                 # React frontend (TypeScript)
+├── client/                        # React frontend
+│   ├── public/icons/              # PWA icons
 │   ├── src/
-│   │   ├── components/     # React components
-│   │   │   ├── Map.tsx     # Google Maps integration
-│   │   │   ├── FlowChart.tsx # Route visualization
-│   │   │   └── RouteMap.tsx
-│   │   ├── pages/          # Page components
-│   │   │   ├── Home.tsx    # Landing page
-│   │   │   └── App.tsx     # Main application
-│   │   └── main.tsx        # App entry point
-│   └── package.json
-├── server/                 # Node.js + Express backend
-│   ├── index.js           # Main server file
-│   └── package.json
-└── README.md
+│   │   ├── api/voyager.ts         # API calls (stores, optimize, save, profile)
+│   │   ├── components/
+│   │   │   ├── ChainPicker.tsx    # Google Places chain search + chips
+│   │   │   ├── FlowChart.tsx      # Route timeline with turn-by-turn
+│   │   │   ├── Map.tsx            # Google Maps + Directions renderer
+│   │   │   └── ProtectedRoute.tsx
+│   │   ├── context/AuthContext.tsx
+│   │   ├── hooks/
+│   │   │   ├── useGeolocation.ts
+│   │   │   ├── useIsMobile.ts
+│   │   │   ├── useRouteOptimizer.ts
+│   │   │   └── useStoreSearch.ts
+│   │   ├── pages/
+│   │   │   ├── Home.tsx           # Landing + sign-in page
+│   │   │   ├── AppPage.tsx        # Main app (desktop + mobile layouts)
+│   │   │   └── ProfilePage.tsx    # Voyage history + lifetime stats
+│   │   └── store/useVoyagerStore.ts
+│   └── vite.config.ts
+├── server/
+│   ├── middleware/auth.js         # Firebase token verification
+│   ├── index.js                   # Express server + all API routes
+│   └── railway.toml
+├── .github/workflows/deploy.yml   # CI/CD pipeline
+└── vercel.json
 ```
 
 ---
 
 ## API Endpoints
 
-### GET `/api/stores`
-Fetches nearby stores based on location and brand names.
+### `GET /api/stores`
+Find nearby stores by chain name.
 
-**Parameters:**
-- `lat` (number): Latitude of search center
-- `lng` (number): Longitude of search center
-- `chains` (string): Comma-separated store brand names
-- `radius` (number): Search radius in meters
+| Param | Type | Description |
+|-------|------|-------------|
+| `lat` | number | Latitude |
+| `lng` | number | Longitude |
+| `chains` | string | Comma-separated chain names |
+| `radius` | number | Radius in meters (max ~32,000) |
 
-**Response:**
-```json
-[
-  {
-    "name": "Target",
-    "lat": 28.5383,
-    "lng": -81.3792,
-    "place_id": "ChIJ...",
-    "address": "123 Main St, Orlando, FL"
-  }
-]
-```
+### `POST /api/optimize-route`
+Optimize a route through up to 20 stores using Nearest Neighbor + 2-Opt.
 
-### POST `/api/optimize-route`
-Optimizes the route between stores using 2-opt algorithm.
-
-**Request Body:**
 ```json
 {
-  "start": {
-    "lat": 28.5383,
-    "lng": -81.3792
-  },
-  "stores": [
-    {
-      "name": "Target",
-      "lat": 28.5383,
-      "lng": -81.3792,
-      "place_id": "ChIJ...",
-      "address": "123 Main St"
-    }
-  ]
+  "start": { "lat": 26.35, "lng": -80.14 },
+  "stores": [{ "name": "Target", "lat": 26.36, "lng": -80.15, "place_id": "..." }]
 }
 ```
 
-**Response:**
-```json
-{
-  "order": [
-    {
-      "place_id": "ChIJ...",
-      "arrival_time": "2024-01-15T10:30:00.000Z",
-      "coords": {
-        "lat": 28.5383,
-        "lng": -81.3792
-      }
-    }
-  ]
-}
+### `POST /api/voyages` *(auth required)*
+Save a completed voyage to Firestore and atomically update user lifetime stats.
+
+### `GET /api/profile/:userId`
+Return a user's profile doc and last 20 voyages.
+
+### `GET /api/health`
+Health check — returns `{ "status": "ok" }`.
+
+---
+
+## How the Route Optimizer Works
+
+1. Fetch real driving distances between all locations via Distance Matrix API (single API call)
+2. Build a complete distance matrix (N+1 × N+1, start location + all stores)
+3. **Nearest Neighbor** greedy seed — start from user position, always go to the closest unvisited store
+4. **2-Opt local search** — iteratively check all segment reversals; accept any that reduce total distance; repeat until no improvement
+5. Build the final route with the Google Directions API using the optimized waypoint order
+
+This produces near-optimal routes for up to 20 stops in ~50ms.
+
+---
+
+## Firestore Data Model
+
+```
+users/{uid}
+  uid, email, displayName, photoURL, createdAt
+  totalVoyages, totalDistanceMeters, totalDurationSeconds
+
+voyages/{voyageId}
+  userId, createdAt, startLocation: {lat, lng}
+  stores: Store[], routeOrder: RouteStop[]
+  stats: { total_distance_meters, total_duration_seconds, optimization_time_ms }
 ```
 
 ---
 
-## How It Works
+## Deployment
 
-1. **Location Detection**: The app automatically detects the user's current location
-2. **Store Search**: Users enter store brand names and search radius
-3. **Store Discovery**: Backend queries Google Places API to find nearby stores
-4. **Route Optimization**: 2-opt algorithm calculates the most efficient route
-5. **Traffic Integration**: Real-time traffic data is incorporated for accurate timing
-6. **Visualization**: Interactive map and flow chart display the optimized route
-7. **Navigation**: Turn-by-turn directions are provided for each leg of the journey
+| Service | Target | Trigger |
+|---------|--------|---------|
+| Vercel | Frontend | Push to `main` |
+| Railway | Backend | Push to `main` |
+| GitHub Release | Changelog | Push `v*` tag |
 
----
-
-## Development
-
-### Available Scripts
-
-**Frontend:**
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run preview  # Preview production build
-npm run lint     # Run ESLint
-```
-
-**Backend:**
-```bash
-node index.js    # Start server
-```
-
-### Environment Variables
-
-**Frontend (.env):**
-- `VITE_GOOGLE_MAPS_API_KEY`: Google Maps API key
-- `VITE_GOOGLE_MAPS_MAP_ID`: Google Maps Map ID (optional)
-
-**Backend (.env):**
-- `GOOGLE_MAPS_API_KEY`: Google Maps API key
-- `PORT`: Server port (default: 5000)
+GitHub Actions secrets required: `VERCEL_TOKEN`, `RAILWAY_TOKEN`, and all `VITE_*` env vars.
 
 ---
 
@@ -264,14 +230,4 @@ node index.js    # Start server
 
 ## License
 
-This project is licensed under the MIT License.
-
----
-
-## Deployment (Planned)
-
-- **Frontend**: Vercel deployment
-- **Backend**: Render, Railway, or DigitalOcean
-- **CI/CD**: Automatic deployment on push to main branch
-
-Deployment instructions and production configuration will be added after MVP completion.
+MIT

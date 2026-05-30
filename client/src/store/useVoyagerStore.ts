@@ -9,6 +9,8 @@ interface VoyagerState {
   // search params
   searchParams: SearchParams;
   setSearchParams: (params: Partial<SearchParams>) => void;
+  addChain: (chain: string) => void;
+  removeChain: (chain: string) => void;
 
   // results
   stores: Store[];
@@ -43,6 +45,26 @@ export const useVoyagerStore = create<VoyagerState>()((set) => ({
       searchParams: { ...state.searchParams, ...params },
     })),
 
+  // Add a chain — silently ignores duplicates
+  addChain: (chain) =>
+    set((state) => ({
+      searchParams: {
+        ...state.searchParams,
+        chains: state.searchParams.chains.includes(chain)
+          ? state.searchParams.chains
+          : [...state.searchParams.chains, chain],
+      },
+    })),
+
+  // Remove a chain by name
+  removeChain: (chain) =>
+    set((state) => ({
+      searchParams: {
+        ...state.searchParams,
+        chains: state.searchParams.chains.filter((c) => c !== chain),
+      },
+    })),
+
   stores: [],
   routeOrder: [],
 
@@ -56,10 +78,5 @@ export const useVoyagerStore = create<VoyagerState>()((set) => ({
   setIsOptimizing: (v) => set({ isOptimizing: v }),
   setError: (msg) => set({ error: msg }),
 
-  reset: () =>
-    set({
-      stores: [],
-      routeOrder: [],
-      error: null,
-    }),
+  reset: () => set({ stores: [], routeOrder: [], error: null }),
 }));
