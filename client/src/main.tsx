@@ -8,9 +8,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorFallback from "./components/ErrorFallback";
 import "./index.css";
 
-const Home      = lazy(() => import("./pages/Home"));
-const AppPage   = lazy(() => import("./pages/AppPage"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
+const Home    = lazy(() => import("./pages/Home"));
+const AppPage = lazy(() => import("./pages/AppPage"));
 
 const queryClient = new QueryClient();
 
@@ -47,9 +46,8 @@ createRoot(document.getElementById("root")!).render(
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
           <Routes>
-            <Route path="/"      element={<PageWrapper><Home /></PageWrapper>} />
-            <Route path="/login" element={<PageWrapper><LoginPage /></PageWrapper>} />
-            <Route path="/app"   element={
+            <Route path="/"    element={<PageWrapper><Home /></PageWrapper>} />
+            <Route path="/app" element={
               <PageWrapper>
                 <ProtectedRoute>
                   <AppPage />
