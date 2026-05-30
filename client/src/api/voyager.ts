@@ -53,3 +53,27 @@ export async function saveVoyage(params: {
   );
   return data;
 }
+
+export async function fetchProfile(userId: string): Promise<{
+  user: {
+    uid: string;
+    displayName: string;
+    photoURL: string;
+    email: string;
+    totalVoyages: number;
+    totalDistanceMeters: number;
+    totalDurationSeconds: number;
+  };
+  voyages: {
+    id: string;
+    createdAt: { _seconds: number };
+    stores: Store[];
+    stats: {
+      total_distance_meters: number;
+      total_duration_seconds: number;
+    }
+  }[];
+}> {
+  const { data } = await axios.get(`${BASE}/api/profile/${userId}`);
+  return data;
+}

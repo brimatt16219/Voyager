@@ -5,6 +5,7 @@ import { useStoreSearch } from "../hooks/useStoreSearch";
 import { useRouteOptimizer } from "../hooks/useRouteOptimizer";
 import { useAuth } from "../context/AuthContext";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { useNavigate } from "react-router-dom";
 import ChainPicker from "../components/ChainPicker";
 import RouteFlowChart from "../components/FlowChart";
 import Map from "../components/Map";
@@ -113,14 +114,15 @@ function SearchPanel({
 }
 
 // ── User section ─────────────────────────────────────────────────
-function UserSection({ user, signOut }: { user: { photoURL?: string | null; displayName?: string | null; email?: string | null }; signOut: () => void }) {
+function UserSection({ user, signOut }: { user: { uid: string; photoURL?: string | null; displayName?: string | null; email?: string | null }; signOut: () => void }) {
+  const navigate = useNavigate();
   const mono = { fontFamily: "'Space Mono', monospace" } as React.CSSProperties;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       {user.photoURL && (
         <img src={user.photoURL} alt="avatar" style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(124,106,255,0.3)", flexShrink: 0 }} />
       )}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div onClick={() => navigate(`/profile/${user.uid}`)} style={{ flex: 1, minWidth: 0 }}>
         <div style={{ ...mono, fontSize: 11, color: "#c8c6e8", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {user.displayName}
         </div>

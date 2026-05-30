@@ -10,6 +10,7 @@ import "./index.css";
 
 const Home    = lazy(() => import("./pages/Home"));
 const AppPage = lazy(() => import("./pages/AppPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 
 const queryClient = new QueryClient();
 
@@ -54,6 +55,7 @@ createRoot(document.getElementById("root")!).render(
                 </ProtectedRoute>
               </PageWrapper>
             } />
+            <Route path="/profile/:userId" element={<PageWrapper><ProfilePage /></PageWrapper>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </QueryClientProvider>
