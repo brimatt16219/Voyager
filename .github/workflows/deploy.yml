@@ -57,23 +57,6 @@ jobs:
           VITE_GOOGLE_MAPS_MAP_ID: ${{ secrets.VITE_GOOGLE_MAPS_MAP_ID }}
       - run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-  # ── Deploy backend to Railway (main only) ──────────────────────
-  deploy-backend:
-    name: Deploy to Railway
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - run: npm install -g @railway/cli
-      - run: railway up --service=Voyager --detach
-        working-directory: server
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
   # ── GitHub Release (version tags only) ─────────────────────────
   release:
     name: Create Release
