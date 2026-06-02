@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   onAuthStateChanged,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   type User,
 } from "firebase/auth";
@@ -44,12 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     });
+    getRedirectResult(auth).catch(() => {});
 
     return unsub; // unsubscribe on unmount
   }, []);
 
   async function signInWithGoogle() {
-    await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
   }
 
   async function signOut() {
